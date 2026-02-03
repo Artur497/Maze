@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="maze.vcxproj" />
+  <Project Path="maze.vcxproj" Id="29d7577b-8579-4d4e-8589-d6b484874ad2" />
 </Solution>

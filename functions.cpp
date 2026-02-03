@@ -5,18 +5,18 @@
 
 int random_int(const int& min, const int& max)
 {
-	std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
+	static std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<int> dist(min, max);
 	return dist(engine);
 }
 
-void generate_maze(const int& width, const int& height)
+maze generate_maze(const int& width, const int& height)
 {
 	maze Maze{ width, height };
 
 	for (int x = 0; x < width; x++)
 	{
-		for (int y = 0; y < height; y++)
+		for (int y = 0; y < height; y++) 
 		{
 			point Point{ x, y, '#' };
 
@@ -24,22 +24,12 @@ void generate_maze(const int& width, const int& height)
 		}
 	}
 
-
-
-	point Start = { random_int(0, width) ,random_int(0, height), 'S' };
-	point End = { random_int(0, width), random_int(0, height), 'E' };
-
-	replace_point(Maze, Start);
-	replace_point(Maze, End);
-
-	
-	print_maze(Maze);
+	return Maze;
 
 }
 
 void replace_point(maze& Maze, const point& new_point)
 {
-	bool check = false;
 
 	for (auto & Point : Maze.points)
 	{
@@ -48,24 +38,14 @@ void replace_point(maze& Maze, const point& new_point)
 			Point.x = new_point.x;
 			Point.y = new_point.y;
 			Point.c = new_point.c;
-			check = true;
 		}
 	}
-
-	
-
-
-
 }
 
 void print_maze(const maze& Maze)
 {
-	int height = Maze.height;
 	int width = Maze.width;
-
 	int newline = 0;
-	std::cout << width << std::endl;
-
 	for (const auto point : Maze.points)
 	{
 		newline++;
@@ -77,4 +57,35 @@ void print_maze(const maze& Maze)
 		}
 		
 	}
+}
+
+bool check_params(int& amount, char* params[], int& width, int& height)
+{
+
+	bool _w = false;
+	bool _h = false;
+
+	for (int i = 0; i < amount - 1; i++)
+	{
+		std::string param = std::string(params[i]);
+
+		if (param == "-w")
+		{
+			int width = atoi(params[i + 1]);
+			_w = true;
+		}
+
+		else if (param == "-h")
+		{
+			int height = atoi(params[i + 1]);
+			_h = true;
+		}
+
+	}
+
+	if (width < 0 or height < 0)
+		return false;
+	else if (_w && _h)
+		return true;
+	return false;
 }
