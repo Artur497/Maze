@@ -14,14 +14,14 @@ int main(int amount, char * params[])
 
 	maze Maze = generate_maze(width, height);
 
-	point Start = { random_int(0, Maze.width - 1),random_int(0, Maze.height - 1), 'S' };
-	point End = { random_int(0, Maze.width - 1), random_int(0, Maze.height - 1), 'E' };
+	create_paths(Maze);
 
+	std::cout << "\033[1;31mTo jest czerwony tekst\033[0m" << std::endl;
 
-	replace_point(Maze, Start);
-	replace_point(Maze, End);
-
+	
 	print_maze(Maze);
+
+		
 
 }
 

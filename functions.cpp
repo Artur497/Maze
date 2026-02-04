@@ -2,12 +2,26 @@
 #include "functions.h"
 #include <chrono>
 #include <random>
+#include <vector>
+#include <tuple>
 
 int random_int(const int& min, const int& max)
 {
 	static std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
 	std::uniform_int_distribution<int> dist(min, max);
 	return dist(engine);
+}
+
+point random_point(maze & Maze, const char & c)
+{
+	
+	point random_point{random_int(0, Maze.width - 1), random_int(0, Maze.height - 1), c};
+
+
+	replace_point(Maze, random_point);
+
+	return random_point;
+	
 }
 
 maze generate_maze(const int& width, const int& height)
@@ -25,7 +39,6 @@ maze generate_maze(const int& width, const int& height)
 	}
 
 	return Maze;
-
 }
 
 void replace_point(maze& Maze, const point& new_point)
@@ -49,7 +62,14 @@ void print_maze(const maze& Maze)
 	for (const auto point : Maze.points)
 	{
 		newline++;
-		std::cout << point.c;
+		if (point.c != '#' && point.c != ' ')
+		{
+			std::cout << "\033[33m" << point.c << "\033[0m" << std::endl;
+		}
+		if (point.c == '#')
+			std::cout << "\033[32m" << (char)219 << (char)219 << "\033[0m";
+		else 
+			std::cout << "  ";
 		if (newline == width)
 		{
 			std::cout << std::endl;
@@ -71,13 +91,13 @@ bool check_params(int& amount, char* params[], int& width, int& height)
 
 		if (param == "-w")
 		{
-			int width = atoi(params[i + 1]);
+			width = atoi(params[i + 1]);
 			_w = true;
 		}
 
 		else if (param == "-h")
 		{
-			int height = atoi(params[i + 1]);
+			height = atoi(params[i + 1]);
 			_h = true;
 		}
 
@@ -89,3 +109,109 @@ bool check_params(int& amount, char* params[], int& width, int& height)
 		return true;
 	return false;
 }
+
+void create_paths(maze& Maze)
+{
+    std::vector <point> stack; 
+
+    point start = random_point(Maze, ' ');
+    stack.push_back(start);
+	
+
+    std::vector <point> Neighbours;
+
+
+    while (!stack.empty())
+    {	
+		Neighbours.clear();
+		point current_point = stack.back();
+
+		
+		neighbours(Maze, current_point, Neighbours);
+		bool has_neighbours = false;
+		if (! Neighbours.empty())
+			has_neighbours = check_neighbour(Neighbours);
+		if (check_neighbour(Neighbours))
+		{
+			int i = random_int(0, Neighbours.size() - 1);
+
+			point chosen_neighbour = Neighbours[i];
+
+			int dx = current_point.x - chosen_neighbour.x;
+			int dy = current_point.y - chosen_neighbour.y;
+
+			point remove_wall;
+
+			remove_wall.x = (current_point.x + chosen_neighbour.x) / 2;
+			remove_wall.y = (current_point.y + chosen_neighbour.y) / 2;
+			remove_wall.c = ' ';
+			replace_point(Maze, remove_wall);
+			current_point.c = ' ';
+			chosen_neighbour.c = ' ';
+			replace_point(Maze, chosen_neighbour);
+
+			stack.push_back(chosen_neighbour);
+		}
+        
+		else
+            stack.pop_back();
+		start.c = 'S';
+		replace_point(Maze, start);
+
+    }
+	point end = random_point(Maze, 'E');
+	end.c = 'E';
+	replace_point(Maze, end);
+
+}
+
+bool check_neighbour(const std::vector <point>& Neighbours)
+{
+	bool has_neighbours = false;
+	for (auto Neighbour : Neighbours)
+	{
+		if (Neighbour.c == '#')
+			has_neighbours = true;
+	}
+	return has_neighbours;
+}
+
+void neighbours(maze& Maze, point & given, std::vector <point> & Neighbours)
+{
+
+	for (auto Point : Maze.points)
+	{
+		if (given.x + 2 == Point.x && given.y == Point.y && Point.c == '#')
+		{
+			point neighbour{ Point.x, Point.y, '#' }; // right
+			Neighbours.push_back(neighbour);
+
+		}
+		
+		if (given.x - 2 == Point.x && given.y == Point.y && Point.c == '#')
+		{
+			point neighbour{ Point.x, Point.y, '#' }; // left
+			Neighbours.push_back(neighbour);
+
+
+		}
+
+		if (given.x == Point.x && given.y + 2 == Point.y && Point.c == '#')
+		{
+			point neighbour{ Point.x, Point.y, '#' }; // up
+			Neighbours.push_back(neighbour);
+
+
+		}
+
+		if (given.x == Point.x && given.y - 2 == Point.y && Point.c == '#')
+		{
+			point neighbour{ Point.x, Point.y, '#' }; // down
+			Neighbours.push_back(neighbour);
+
+
+		}
+
+	}
+}
+
