@@ -21,6 +21,7 @@ struct point
 {
 	int x, y;
 	char c;
+	bool wall = false;
 };
 
 

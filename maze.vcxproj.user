@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-w 60 -h 50</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-w 50 -h 50</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArgumentsHistory>-w 10 -h 10|-w 25 -h 25|-w 100 -h 100|-w 60 -h 60|-w 60 -h 50|</LocalDebuggerCommandArgumentsHistory>
+    <LocalDebuggerCommandArgumentsHistory>-w 5 -h 5|-w 40 -h 40|-w 4 -h 4|-w 10 -h 10|-w 50 -h 50|</LocalDebuggerCommandArgumentsHistory>
   </PropertyGroup>
 </Project>
