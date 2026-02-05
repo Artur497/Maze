@@ -19,12 +19,10 @@ int main(int amount, char* params[])
 	
 	create_paths(Maze);
 
-	print_maze(Maze);
+	std::cout << "\033[1;31mTo jest czerwony tekst\033[0m" << std::endl;
 
 	
-	return 0;
-
-
+	print_maze(Maze);
 
 		
 
