@@ -3,10 +3,37 @@
 #include <chrono>
 #include <random>
 #include <vector>
+#include <chrono>
+#include <thread>
+#include <algorithm>
+#include <cmath>
+#include <queue>
 
-#include <chrono> 
-#include <thread> 
-#include <stdlib.h>
+
+void set_cursor(int height,int  length)
+{
+	std::cout << "\033[" << height + 1 << ";" << length + 1 << "H";
+}
+
+void animation(const point & Point)
+{
+	
+	if (Point.c != char(254))
+	{
+		set_cursor(Point.x, Point.y * 2);
+		std::cout << "\033[?25l" << Point.c << " " << std::flush;
+		std::this_thread::sleep_for(std::chrono::milliseconds(40));
+	}
+
+	else if (Point.c == 'S' || Point.c == 'E')
+	{
+		set_cursor(Point.x, Point.y * 2);
+		
+		std::cout << "\033[?25l" << Point.c << " " << std::flush;
+		std::this_thread::sleep_for(std::chrono::milliseconds(40));
+	}
+}
+
 
 int random_int(const int& min, const int& max)
 {
@@ -38,7 +65,7 @@ maze generate_maze(const int& width, const int& height)
 	{
 		for (int y = 0; y < height; y++) 
 		{
-			point Point{ x, y , (char)254 };
+			point Point{ x, y ,(char)254};
 
 			if (Point.x == 0 || Point.y == 0 || Point.x == Maze.width - 1 || Point.y == Maze.height - 1)
 				Point.wall = true;
@@ -86,6 +113,11 @@ void print_maze(const maze & Maze)
 			case ' ':
 				std::cout << point.c << " ";
 				break;
+			case '*':
+				std::cout << point.c << " ";
+				break;
+
+
 
 			default:
 				std::cout << "\033[31m" <<  point.c << "\033[0m" << " ";
@@ -126,17 +158,23 @@ bool check_params(int& amount, char* params[], int& width, int& height)
 	return false;
 }
 
-void create_paths(maze& Maze)
+
+//*** BACKPROPAGATION ALGORITHM ***
+
+
+void backpropagation(maze& Maze)
 {
 	std::vector <point> stack;
 
-	point start = random_point(Maze, ' ');
-	stack.push_back(start);
+	
 
-
+	
 	std::vector <point> Neighbours;
 
+	print_maze(Maze);
 
+	point start = random_point(Maze, ' ');
+	stack.push_back(start);
 	while (!stack.empty())
 	{
 
@@ -168,6 +206,10 @@ void create_paths(maze& Maze)
 			chosen_neighbour.c = ' ';
 			replace_point(Maze, chosen_neighbour);
 
+			animation(remove_wall);
+			animation(current_point);
+			animation(chosen_neighbour);
+
 			stack.push_back(chosen_neighbour);
 
 
@@ -175,13 +217,18 @@ void create_paths(maze& Maze)
 
 		else
 			stack.pop_back();
-		start.c = 'S';
-		replace_point(Maze, start);
+			start.c = 'S';
+			replace_point(Maze, start);
+			animation(start);
+			Maze.start = start;
+
 
 	}
 	point end = random_point(Maze, 'E');
-	end.c = 'E';
 	replace_point(Maze, end);
+	animation(end);
+	set_cursor(Maze.height + 1, 1);
+	Maze.end = end;
 
 
 }
@@ -197,7 +244,7 @@ bool check_neighbour(const std::vector <point>& Neighbours)
 	return has_neighbours;
 }
 
-void neighbours(maze& Maze, point & given, std::vector <point> & Neighbours)
+void neighbours(maze& Maze, point& given, std::vector <point>& Neighbours)
 {
 
 	for (auto Point : Maze.points)
@@ -208,7 +255,7 @@ void neighbours(maze& Maze, point & given, std::vector <point> & Neighbours)
 			Neighbours.push_back(neighbour);
 
 		}
-		
+
 		if (given.x - 2 == Point.x && given.y == Point.y && Point.c == (char)254 && Point.wall == false)
 		{
 			point neighbour{ Point.x, Point.y, (char)254 }; // left
@@ -235,5 +282,118 @@ void neighbours(maze& Maze, point & given, std::vector <point> & Neighbours)
 
 	}
 }
+
+////
+
+
+void list_points(const maze& Maze)
+{
+	std::cout << "[";
+	for (auto a : Maze.points)
+	{
+		std::cout << a.c << ", ";
+	}
+	std::cout << ']' << std::endl;
+}
+
+
+
+void breadth_first_search(maze& Maze)
+{
+	std::queue <point> queue;
+	std::vector <point> neighbours;
+	point current_point;
+
+	queue.push(Maze.start);
+
+	set_cursor(Maze.start.y, Maze.start.x);
+	while (!queue.empty())
+	{
+		current_point = queue.front();
+		replace_point(Maze, current_point);
+		animation(current_point);
+
+		if (distance(current_point, Maze.end) <= 1)
+			break;
+		
+		
+		neighbours.clear();
+		b_neighbours(Maze, current_point, neighbours);
+	
+		queue.pop();
+		for (auto a : neighbours)
+		{
+			
+			a.c = '*';
+			queue.push(a);
+			replace_point(Maze, a);
+
+		}
+
+		
+
+	}
+
+	set_cursor(Maze.height, Maze.width);
+
+}
+
+
+
+
+double distance(point& first, point& second)
+{
+	int x = (second.x - first.x);
+	int y = (second.y - first.y);
+
+	return sqrt(x * x + y * y);
+}
+
+
+void b_neighbours(maze& Maze, point& given, std::vector <point>& Neighbours)
+{
+
+	for (auto& Point : Maze.points)
+	{
+
+
+		if (given.x + 1 == Point.x && given.y == Point.y && Point.c == ' ')
+		{
+			point neighbour{ Point.x, Point.y, '*' }; // right
+			Neighbours.push_back(neighbour);
+
+		}
+
+		else if (given.x - 1 == Point.x && given.y == Point.y && Point.c == ' ')
+		{
+			point neighbour{ Point.x, Point.y, '*' }; // left
+			Neighbours.push_back(neighbour);
+
+
+		}
+
+		else if (given.x == Point.x && given.y + 1 == Point.y && Point.c == ' ')
+		{
+			point neighbour{ Point.x, Point.y, '*' }; // up
+			Neighbours.push_back(neighbour);
+
+
+		}
+
+		else if (given.x == Point.x && given.y - 1 == Point.y && Point.c == ' ')
+		{
+			point neighbour{ Point.x, Point.y, '*' }; // down
+			Neighbours.push_back(neighbour);
+
+
+		}
+	}
+
+	
+
+}
+
+
+
 
 

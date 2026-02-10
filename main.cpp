@@ -15,16 +15,25 @@ int main(int amount, char* params[])
 	}
 
 	maze Maze = generate_maze(width, height);
+	
+
+	backpropagation(Maze);
+
+
+	breadth_first_search(Maze);
 
 	
-	create_paths(Maze);
-
-	std::cout << "\033[1;31mTo jest czerwony tekst\033[0m" << std::endl;
 
 	
-	print_maze(Maze);
 
-		
 
+
+	
+
+
+	
+	//print_maze(Maze);
+
+	
 }
 
