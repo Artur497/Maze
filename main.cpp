@@ -1,8 +1,9 @@
 ﻿
 #include "functions.h"
 #include <iostream>
+#include <iomanip>
 
-
+int start = 0;
 
 int main(int amount, char* params[])
 {
@@ -16,23 +17,79 @@ int main(int amount, char* params[])
 
 	maze Maze = generate_maze(width, height);
 	
-
 	backpropagation(Maze);
+	print_maze(Maze);
+
+	bool running = true;
+	int action = 0;
+
+	while (running)
+	{
+		if (action == 0)
+		{
+			std::cout << std::endl;
+			std::cout << "Type number " << std::endl;
+			std::cout << "[1] - Breadth First Search" << std::endl;
+			std::cout << "[2] - A*" << std::endl;
+			std::cout << "[3] - New Labirynth" << std::endl;
+			std::cout << "\033[?25h" << ">>";
+			std::cin >> action;
+
+			if (action != 1 && action != 2 && action != 3)
+			{
+				action = 0;
+			}
+			else
+			{
+				system("cls");
+				clear_maze(Maze);
+				print_maze(Maze);
+			}
+		}
+
+		if (action == 1)
+		{
+			breadth_first_search(Maze);
+			set_cursor(Maze.height + 3, 0); 
+			action = 0;
+		}
+
+		else if (action == 2)
+		{
+			a_star(Maze);
+			set_cursor(Maze.height + 3, 0);
+			action = 0;
+		}
+
+		else if (action == 3)
+		{
+			char decision;
+			std::cout << std::endl;
+			std::cout << "Same parameters ( W: " << Maze.width << " H: " << Maze.height << ") " << "[y/n]" << std::endl;
+			std::cin >> decision;
+
+			if (decision == 'n')
+			{
+				std::cout << "Width: ";
+				std::cin >> width; 
+				std::cout << std::endl;
+				std::cout << "Height: ";
+				std::cin >> height; 
+				std::cout << std::endl;
+			}
+
+			Maze = generate_maze(width, height);
+			system("cls"); 
+			backpropagation(Maze);
+			print_maze(Maze);
+			action = 0;
+		}
+	}
+	return 0;
 
 
-	breadth_first_search(Maze);
 
 	
-
-	
-
-
-
-	
-
-
-	
-	//print_maze(Maze);
 
 	
 }

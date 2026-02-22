@@ -12,7 +12,10 @@ struct point
 	int x, y;
 	char c;
 	bool wall = false;
+	int step; // to recreate path 
+
 };
+
 
 
 struct maze
@@ -52,11 +55,21 @@ void animation(const point& Point);
 
 void list_points(const maze& Maze);
 
-void b_neighbours(maze& Maze, point& given, std::vector <point>& Neighbours);
+void b_neighbours(const maze& Maze, point& given, std::vector <point>& Neighbours, bool type);
 
 void breadth_first_search(maze& Maze);
 
-double distance(point& first, point& second);
+double distance(const point& first, const point& second);
+
+void backtracing(const maze& Maze);
+
+void clear_maze(maze& Maze);
+
+void a_star(maze& Maze);
+
+int cost(const point& Point, const maze& Maze);
+
+void calculate_step(maze& Maze);
 
 
 #endif
