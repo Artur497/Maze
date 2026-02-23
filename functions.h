@@ -5,6 +5,7 @@
 #define FUNKCJE_H
 
 #include <vector>
+#include <string>
 
 
 struct point
@@ -25,9 +26,16 @@ struct maze
 	std::vector <point> points;
 	point start;
 	point end;
+	int solution_size = 0; // size of solution 
+	int count = 0; // how many points visited
 
 };
 
+struct score
+{
+	std::string algorithm;
+	double accuracy;
+};
 
 
 
@@ -61,15 +69,13 @@ void breadth_first_search(maze& Maze);
 
 double distance(const point& first, const point& second);
 
-void backtracing(const maze& Maze);
+void backtracing(maze& Maze);
 
 void clear_maze(maze& Maze);
 
 void a_star(maze& Maze);
 
 int cost(const point& Point, const maze& Maze);
-
-void calculate_step(maze& Maze);
 
 
 #endif

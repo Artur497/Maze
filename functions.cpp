@@ -21,9 +21,7 @@ void animation(const point & Point)
 	if (Point.c == 'S' || Point.c == 'E')
 	{
 		set_cursor(Point.y, Point.x * 2);
-
 		std::cout << "\033[31m" << "\033[?25l" << Point.c << " " << "\033[0m" << std::flush;
-
 		std::this_thread::sleep_for(std::chrono::milliseconds(4));
 	}
 
@@ -49,10 +47,7 @@ point random_point(maze & Maze, const char & c)
 {
 
 	point random_point{ random_int(1, Maze.width - 1), random_int(1, Maze.height - 1), c };
-
-
 	replace_point(Maze, random_point);
-
 	return random_point;
 	
 }
@@ -61,9 +56,6 @@ point random_point(maze & Maze, const char & c)
 maze generate_maze(const int& width, const int& height)
 {
 	maze Maze{ width, height };
-
-
-
 	for (int y = 0; y < height; y++)
 	{
 		for (int x = 0; x < width; x++)
@@ -82,12 +74,8 @@ maze generate_maze(const int& width, const int& height)
 
 void replace_point(maze& Maze, const point& new_point)
 {
-	
 	int index = new_point.y * Maze.width + new_point.x;
-
 	Maze.points[index].c = new_point.c;
-
-
 }
 
 
@@ -112,9 +100,6 @@ void print_maze(const maze & Maze)
 			case '*':
 				std::cout << point.c << " ";
 				break;
-
-
-
 			default:
 				std::cout << "\033[31m" <<  point.c << "\033[0m" << " ";
 		}
@@ -198,10 +183,7 @@ void backpropagation(maze& Maze)
 			replace_point(Maze, chosen_neighbour);
 
 			stack.push_back(chosen_neighbour);
-
-
 		}
-
 		else
 		{
 			stack.pop_back();
@@ -212,9 +194,27 @@ void backpropagation(maze& Maze)
 
 
 	}
-	point end = random_point(Maze, 'E');
-	replace_point(Maze, end);
-	Maze.end = end;
+	bool found = false;
+
+	while(!found)
+	{
+		point end = random_point(Maze, ' ');
+
+		Neighbours.clear();
+		b_neighbours(Maze, end, Neighbours, 0);
+
+		for (auto n : Neighbours)
+		{
+			if (n.c == ' ')
+			{
+				end.c = 'E';
+				replace_point(Maze, end);
+				Maze.end = end;
+				found = true;
+			}
+		}
+	}
+	
 
 
 }
@@ -286,13 +286,17 @@ void breadth_first_search(maze& Maze)
 	std::queue <point> queue;
 	std::vector <point> neighbours;
 
+
 	point current_point;
 	Maze.start.step = 0;
+	Maze.count = 0;
 	queue.push(Maze.start);
 	set_cursor(Maze.start.y, Maze.start.x);
 	while (!queue.empty())
 	{
 		current_point = queue.front();
+		queue.pop();
+		Maze.count++;
 		int d = current_point.step;
 		replace_point(Maze, current_point);
 		animation(current_point);
@@ -300,29 +304,23 @@ void breadth_first_search(maze& Maze)
 		if (distance(current_point, Maze.end) <= 1)
 		{
 			Maze.end.step = d + 1;
+			Maze.count++;
 			break;
 		}
-
 		
 		
 		neighbours.clear();
 		b_neighbours(Maze, current_point, neighbours, 0);
 	
-		queue.pop();
 		for (auto a : neighbours)
 		{
-			
 			a.c = '*';
 			a.step = d + 1;
 			int index = a.y * Maze.width + a.x;
 			Maze.points[index].step = a.step;
 			queue.push(a);
 			replace_point(Maze, a);
-
 		}
-
-		
-
 	}
 	
 	set_cursor(Maze.height, Maze.width);
@@ -332,7 +330,7 @@ void breadth_first_search(maze& Maze)
 
 }
 
-void backtracing(const maze & Maze)
+void backtracing(maze & Maze)
 {
 	point current_point = Maze.end;
 	std::vector<point> solution;
@@ -348,7 +346,7 @@ void backtracing(const maze & Maze)
 		bool moved = false;
 		for (auto n : Neighbours) 
 		{
-			if (n.step == current_point.step - 1) 
+			if (n.step == current_point.step - 1)
 			{
 				current_point = n;
 				solution.push_back(n);
@@ -356,7 +354,6 @@ void backtracing(const maze & Maze)
 				break; 
 			}
 		}
-
 	
 		if (!moved) {
 			std::cout << "[Error] Path is not continuos" << std::endl;
@@ -368,16 +365,13 @@ void backtracing(const maze & Maze)
 
 	for (auto a : solution)
 	{
-		set_cursor(a.y, a.x * 2);
-		std::cout << "\033[31m" << "\033[?25l" << "*" << " " << "\033[0m" << std::flush;
-		std::this_thread::sleep_for(std::chrono::milliseconds(4));
+		if (a.c != 'E')
+			set_cursor(a.y, a.x * 2);
+			std::cout << "\033[31m" << "\033[?25l" << "*" << " " << "\033[0m" << std::flush;
+			std::this_thread::sleep_for(std::chrono::milliseconds(4));
 	}
 	
-
-	
-	//std::cout << "Solution size: " << solution.size() << std::endl;
-
-
+	Maze.solution_size = solution.size();
 	
 }
 
@@ -441,10 +435,11 @@ void clear_maze(maze& Maze)
 	}
 }
 
+//*** A * ALGORITHM ***
+
 
 void a_star(maze& Maze)
 {
-	std::vector <point> solution;
 	std::vector<point> Neighbours;
 	auto comp = [&Maze](const point& first, const point& second) {return cost(first, Maze) > cost(second, Maze);  };
 
@@ -454,41 +449,41 @@ void a_star(maze& Maze)
 	queue.push(current_point);
 
 	Maze.start.step = 0;
-	int step = 0;
-
+	Maze.count = 0;
 	
 	while (!queue.empty())
 	{
+		current_point = queue.top();
+		queue.pop();
+		Maze.count++;
 		Neighbours.clear();
 
 		if (distance(current_point, Maze.end) <= 1)
 		{
+			Maze.points[Maze.end.y * Maze.width + Maze.end.x].step = current_point.step + 1;
+			Maze.end.step = current_point.step + 1;
+			Maze.count++;
 			break;
 		}
-
 		b_neighbours(Maze, current_point, Neighbours, 0);
 
-		if (!Neighbours.empty()) step++;
 
 		for (auto & n : Neighbours)
 		{
-			n.step = step;
+			n.step = current_point.step + 1;
+			n.c = '*';
+			Maze.points[n.y * Maze.width + n.x].step = n.step;
+			replace_point(Maze, n);
 			queue.push(n);
-
 		}
 		
-		current_point = queue.top();
-		queue.pop();
 		if (current_point.c != 'S' && current_point.c != 'E')
 			current_point.c = '*';
 		replace_point(Maze, current_point);
-
 		animation(current_point);
-
-
-
 	}
-
+	set_cursor(Maze.height, Maze.width);
+	backtracing(Maze);
 
 }
 
